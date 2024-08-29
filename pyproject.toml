@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "bgen"
+version = "0.1.0"
+description = "Create dynamic backgrounds from your code projects"
+authors = ["Oli <oli@olillin.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pillow = "^10.4.0"
+pyautogui = "^0.9.54"
+pygments = "^2.18.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
