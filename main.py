@@ -146,7 +146,7 @@ def render_file(path: Path, size: tuple[int, int], maxlines: int = 40) -> Image.
     # Header
     icon = get_icon(path.name)
     header = render_header(
-        str(path.absolute()),
+        str(path),
         (size[0], header_height),
         "#cccac2",
         style.background_color,
@@ -162,14 +162,19 @@ def render_file(path: Path, size: tuple[int, int], maxlines: int = 40) -> Image.
         image.paste(code, (0, header_height))
     except ClassNotFound as e:
         print(f"Failed to render source code for {path.name}: {e}")
+        raise e
 
     return image
 
 
 def can_render(path: Path) -> bool:
     try:
+        get_lexer_for_filename(path.name)
         with open(path, "r") as f:
-            for line in f.readlines():
+            lines = f.readlines()
+            if len(lines) == 0:
+                return False
+            for line in lines:
                 if len(line) > 500:
                     return False
     except:
@@ -187,13 +192,16 @@ def main():
 
     i = 0
     for fn in files:
-        path = Path(fn)
+        path = Path(fn).resolve()
         if not can_render(path):
             continue
-        print(f"Rendering {path.absolute()}")
-        bg = render_file(path, screen_resolution)
-        bg.save(out_dir.joinpath(f"bg_{i}.png"))
-        i += 1
+        print(f"Rendering {path}")
+        try:
+            bg = render_file(path, screen_resolution)
+            bg.save(out_dir.joinpath(f"bg_{i}.png"))
+            i += 1
+        except ClassNotFound:
+            continue
     print("Done")
 
 
