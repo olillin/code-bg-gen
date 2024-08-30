@@ -14,6 +14,7 @@ from simpleicons.all import icons
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 import os
+import glob
 
 from style import AyuMirage
 
@@ -160,17 +161,41 @@ def render_file(path: Path, size: tuple[int, int], maxlines: int = 40) -> Image.
         )
         image.paste(code, (0, header_height))
     except ClassNotFound as e:
-        print(f"Failed to render source code for {path.name}")
-        print(e)
+        print(f"Failed to render source code for {path.name}: {e}")
 
     return image
 
 
-out_dir: Path = Path("out")
-screen_resolution: tuple[int, int] = pyautogui.size()
-bg = render_file(Path(__file__), screen_resolution)
-if not out_dir.exists():
-    os.makedirs(out_dir)
-bg.save(out_dir.joinpath("bg.png"))
-bg.show()
-print("Done")
+def can_render(path: Path) -> bool:
+    try:
+        with open(path, "r") as f:
+            for line in f.readlines():
+                if len(line) > 500:
+                    return False
+    except:
+        return False
+    return True
+
+
+def main():
+    files = glob.glob("../**/*")
+    screen_resolution: tuple[int, int] = pyautogui.size()
+
+    out_dir: Path = Path("out")
+    if not out_dir.exists():
+        os.makedirs(out_dir)
+
+    i = 0
+    for fn in files:
+        path = Path(fn)
+        if not can_render(path):
+            continue
+        print(f"Rendering {path.absolute()}")
+        bg = render_file(path, screen_resolution)
+        bg.save(out_dir.joinpath(f"bg_{i}.png"))
+        i += 1
+    print("Done")
+
+
+if __name__ == "__main__":
+    main()
